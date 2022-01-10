@@ -9,6 +9,9 @@ import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
     /**
      * 日志
@@ -18,6 +21,8 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
      * 信道组，为了实现群发
      */
     static private final ChannelGroup _channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+    private Map<Integer, User> _userMap = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -51,12 +56,33 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             int userId = cmd.getUserId();
             String avatar = cmd.getHeroAvatar();
 
+            User newUser = new User();
+            newUser.setUserId(userId);
+            newUser.setUserAvatar(avatar);
+            _userMap.putIfAbsent(userId, newUser);
+
             GameMsgProtocol.UserEntryResult.Builder resultBuilder = GameMsgProtocol.UserEntryResult.newBuilder();
             resultBuilder.setUserId(userId);
             resultBuilder.setHeroAvatar(avatar);
 
             GameMsgProtocol.UserEntryResult newResult = resultBuilder.build();
             _channelGroup.writeAndFlush(newResult);
+        } else if (msg instanceof GameMsgProtocol.WhoElseIsHereCmd) {
+            GameMsgProtocol.WhoElseIsHereResult.Builder resultBuilder = GameMsgProtocol.WhoElseIsHereResult.newBuilder();
+            for (User currUser : _userMap.values()) {
+                if (null == currUser) {
+                    continue;
+                }
+
+                GameMsgProtocol.WhoElseIsHereResult.UserInfo.Builder userInfoBuilder = GameMsgProtocol.WhoElseIsHereResult.UserInfo.newBuilder();
+                userInfoBuilder.setUserId(currUser.getUserId());
+                userInfoBuilder.setHeroAvatar(currUser.getUserAvatar());
+
+                resultBuilder.addUserInfo(userInfoBuilder.build());
+            }
+
+            GameMsgProtocol.WhoElseIsHereResult result = resultBuilder.build();
+            ctx.writeAndFlush(result);
         }
     }
 }
