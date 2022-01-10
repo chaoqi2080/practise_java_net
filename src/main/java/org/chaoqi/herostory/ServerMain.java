@@ -17,6 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerMain {
+    /**
+     * 日志对象
+     */
     static private final Logger LOGGER = LoggerFactory.getLogger(ServerMain.class);
     public static void main(String[] args) {
         PropertyConfigurator.configure(ServerMain.class.getClassLoader().getResourceAsStream("log4j.properties"));
@@ -34,9 +37,18 @@ public class ServerMain {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(
+                            //http 服务器编解码
                             new HttpServerCodec(),
+                            //内容长度限制
                             new HttpObjectAggregator(65535),
-                            new WebSocketServerProtocolHandler("/websocket")
+                            //Websocket协议处理，处理握手、ping、pong 心跳等消息
+                            new WebSocketServerProtocolHandler("/websocket"),
+                            //转换成具体的消息
+                            new GameMsgDecoder(),
+                            //
+                            new GameMsgEncoder(),
+                            //处理消息
+                            new GameMsgHandler()
                     );
                 }
             });
@@ -44,6 +56,7 @@ public class ServerMain {
             b.option(ChannelOption.SO_BACKLOG, 128);
             b.childOption(ChannelOption.SO_KEEPALIVE, true);
 
+            //监听端口
             ChannelFuture f = b.bind(12345).sync();
 
             if (f.isSuccess()) {
@@ -58,6 +71,5 @@ public class ServerMain {
             workerGroup.shutdownGracefully();
             boosGroup.shutdownGracefully();
         }
-
     }
 }
