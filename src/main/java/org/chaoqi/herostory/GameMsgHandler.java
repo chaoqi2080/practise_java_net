@@ -4,6 +4,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.AttributeKey;
+import io.netty.util.AttributeMap;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
@@ -43,6 +45,34 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        try {
+            super.handlerRemoved(ctx);
+
+            Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
+            if (null == userId) {
+                return;
+            }
+
+            //移除当前用户
+            _userMap.remove(userId);
+
+            GameMsgProtocol.UserQuitResult.Builder resultBuilder = GameMsgProtocol.UserQuitResult.newBuilder();
+            resultBuilder.setQuitUserId(userId);
+
+            //移除自己的 channel
+            _channelGroup.remove(ctx.channel());
+
+            //广播用户退出
+            GameMsgProtocol.UserQuitResult result = resultBuilder.build();
+            _channelGroup.writeAndFlush(result);
+        } catch (Exception ex) {
+            //记录错误日志
+            LOGGER.error(ex.getMessage(), ex);
+        }
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (null == ctx || null == msg) {
             return;
@@ -63,6 +93,9 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             newUser.setUserId(userId);
             newUser.setUserAvatar(avatar);
             _userMap.putIfAbsent(userId, newUser);
+
+            //把当前用户id 绑定到 ctx
+            ctx.attr (AttributeKey.valueOf("userId")).set(userId);
 
             GameMsgProtocol.UserEntryResult.Builder resultBuilder = GameMsgProtocol.UserEntryResult.newBuilder();
             resultBuilder.setUserId(userId);
@@ -86,6 +119,22 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
 
             GameMsgProtocol.WhoElseIsHereResult result = resultBuilder.build();
             ctx.writeAndFlush(result);
+        } else if (msg instanceof GameMsgProtocol.UserMoveToCmd) {
+            GameMsgProtocol.UserMoveToCmd cmd = (GameMsgProtocol.UserMoveToCmd) msg;
+
+            //获取跟当前 ctx 绑定的用户id
+            Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
+            if (null == userId) {
+                return;
+            }
+
+            GameMsgProtocol.UserMoveToResult.Builder resultBuilder = GameMsgProtocol.UserMoveToResult.newBuilder();
+            resultBuilder.setMoveUserId(userId);
+            resultBuilder.setMoveFromPosX(cmd.getMoveFromPosX());
+            resultBuilder.setMoveFromPosY(cmd.getMoveFromPosY());
+
+            GameMsgProtocol.UserMoveToResult result = resultBuilder.build();
+            _channelGroup.writeAndFlush(result);
         }
     }
 }

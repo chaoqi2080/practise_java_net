@@ -32,6 +32,10 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
                 msgCode = GameMsgProtocol.MsgCode.USER_ENTRY_RESULT_VALUE;
             } else if (msg instanceof GameMsgProtocol.WhoElseIsHereResult) {
                 msgCode = GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_RESULT_VALUE;
+            } else if (msg instanceof GameMsgProtocol.UserMoveToResult) {
+                msgCode = GameMsgProtocol.MsgCode.USER_MOVE_TO_RESULT_VALUE;
+            } else if (msg instanceof GameMsgProtocol.UserQuitResult) {
+                msgCode = GameMsgProtocol.MsgCode.USER_QUIT_RESULT_VALUE;
             } else {
                 LOGGER.error(
                         "无法识别的消息类型， msgClazz = {}",
@@ -56,6 +60,7 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
             BinaryWebSocketFrame outputFrame = new BinaryWebSocketFrame(byteBuffer);
             super.write(ctx, outputFrame, promise);
         } catch (Exception ex) {
+            //处理错误日志
             LOGGER.error(ex.getMessage(), ex);
         }
     }
