@@ -3,6 +3,9 @@ package org.chaoqi.herostory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
+import org.chaoqi.herostory.cmdhandler.UserEntryCmdHandler;
+import org.chaoqi.herostory.cmdhandler.UserMoveToCmdHandler;
+import org.chaoqi.herostory.cmdhandler.WhoElseIsHereCmdHandler;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,58 +74,11 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
         );
 
         if (msg instanceof GameMsgProtocol.UserEntryCmd) {
-            GameMsgProtocol.UserEntryCmd cmd = (GameMsgProtocol.UserEntryCmd) msg;
-            int userId = cmd.getUserId();
-            String avatar = cmd.getHeroAvatar();
-
-            User newUser = new User();
-            newUser.setUserId(userId);
-            newUser.setUserAvatar(avatar);
-            UserManager.addUser(newUser);
-
-            //把当前用户id 绑定到 ctx
-            ctx.attr (AttributeKey.valueOf("userId")).set(userId);
-
-            GameMsgProtocol.UserEntryResult.Builder resultBuilder = GameMsgProtocol.UserEntryResult.newBuilder();
-            resultBuilder.setUserId(userId);
-            resultBuilder.setHeroAvatar(avatar);
-
-            GameMsgProtocol.UserEntryResult result = resultBuilder.build();
-            Broadcaster.broadcast(result);
+            (new UserEntryCmdHandler()).handle(ctx, (GameMsgProtocol.UserEntryCmd) msg);
         } else if (msg instanceof GameMsgProtocol.WhoElseIsHereCmd) {
-            GameMsgProtocol.WhoElseIsHereResult.Builder resultBuilder = GameMsgProtocol.WhoElseIsHereResult.newBuilder();
-
-            Collection<User> userList = UserManager.listUser();
-            for (User currUser : userList) {
-                if (null == currUser) {
-                    continue;
-                }
-
-                GameMsgProtocol.WhoElseIsHereResult.UserInfo.Builder userInfoBuilder = GameMsgProtocol.WhoElseIsHereResult.UserInfo.newBuilder();
-                userInfoBuilder.setUserId(currUser.getUserId());
-                userInfoBuilder.setHeroAvatar(currUser.getUserAvatar());
-
-                resultBuilder.addUserInfo(userInfoBuilder.build());
-            }
-
-            GameMsgProtocol.WhoElseIsHereResult result = resultBuilder.build();
-            Broadcaster.broadcast(result);
+            (new WhoElseIsHereCmdHandler()).handle(ctx);
         } else if (msg instanceof GameMsgProtocol.UserMoveToCmd) {
-            GameMsgProtocol.UserMoveToCmd cmd = (GameMsgProtocol.UserMoveToCmd) msg;
-
-            //获取跟当前 ctx 绑定的用户id
-            Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
-            if (null == userId) {
-                return;
-            }
-
-            GameMsgProtocol.UserMoveToResult.Builder resultBuilder = GameMsgProtocol.UserMoveToResult.newBuilder();
-            resultBuilder.setMoveUserId(userId);
-            resultBuilder.setMoveFromPosX(cmd.getMoveFromPosX());
-            resultBuilder.setMoveFromPosY(cmd.getMoveFromPosY());
-
-            GameMsgProtocol.UserMoveToResult result = resultBuilder.build();
-            Broadcaster.broadcast(result);
+            (new UserMoveToCmdHandler()).handle(ctx, (GameMsgProtocol.UserMoveToCmd) msg);
         }
     }
 }
