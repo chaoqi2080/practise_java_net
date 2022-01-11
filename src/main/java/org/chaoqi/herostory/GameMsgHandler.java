@@ -22,7 +22,10 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
      */
     static private final ChannelGroup _channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    private Map<Integer, User> _userMap = new HashMap<>();
+    /**
+     * 用户字典
+     */
+    static private final Map<Integer, User> _userMap = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
