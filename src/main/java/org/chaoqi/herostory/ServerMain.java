@@ -28,6 +28,8 @@ public class ServerMain {
 
         // 初始化命令处理器
         CmdHandlerFactory.init();
+        // 初始化消息处理器
+        GameMsgRecognizer.init();
 
         //接收线程
         EventLoopGroup boosGroup = new NioEventLoopGroup();

@@ -1,6 +1,7 @@
 package org.chaoqi.herostory;
 
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -37,22 +38,16 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
             byte[] msgBody = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(msgBody);
 
-            GeneratedMessageV3 cmd = null;
-
-            switch (msgCode) {
-                case GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE:
-                    cmd = GameMsgProtocol.UserEntryCmd.parseFrom(msgBody);
-                    break;
-                case GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_CMD_VALUE:
-                    cmd = GameMsgProtocol.WhoElseIsHereCmd.parseFrom(msgBody);
-                    break;
-                case GameMsgProtocol.MsgCode.USER_MOVE_TO_CMD_VALUE:
-                    cmd = GameMsgProtocol.UserMoveToCmd.parseFrom(msgBody);
-                    break;
-
-                default:
-                    break;
+            //获取消息处理器
+            Message.Builder defaultBuilder = GameMsgRecognizer.getBuilderByMsgCode(msgCode);
+            if (null == defaultBuilder) {
+                LOGGER.error("遗漏了未处理的消息 = {}", msgCode);
+                return;
             }
+            defaultBuilder.clear();
+            defaultBuilder.mergeFrom(msgBody);
+
+            Message cmd = defaultBuilder.build();
 
             if (null != cmd) {
                 ctx.fireChannelRead(cmd);
