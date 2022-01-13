@@ -8,8 +8,13 @@ import org.chaoqi.herostory.msg.GameMsgProtocol;
 
 import java.util.Collection;
 
-public class WhoElseIsHereCmdHandler {
-    public void handle(ChannelHandlerContext ctx) {
+public class WhoElseIsHereCmdHandler implements ICmdHandler<GameMsgProtocol.WhoElseIsHereCmd> {
+    @Override
+    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.WhoElseIsHereCmd cmd) {
+        if (null == ctx || null == cmd) {
+            return;
+        }
+
         GameMsgProtocol.WhoElseIsHereResult.Builder resultBuilder = GameMsgProtocol.WhoElseIsHereResult.newBuilder();
 
         Collection<User> userList = UserManager.listUser();

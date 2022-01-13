@@ -13,6 +13,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.log4j.PropertyConfigurator;
+import org.chaoqi.herostory.cmdhandler.CmdHandlerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,11 @@ public class ServerMain {
      */
     static private final Logger LOGGER = LoggerFactory.getLogger(ServerMain.class);
     public static void main(String[] args) {
+        // 设置 log4j 属性文件
         PropertyConfigurator.configure(ServerMain.class.getClassLoader().getResourceAsStream("log4j.properties"));
+
+        // 初始化命令处理器
+        CmdHandlerFactory.init();
 
         //接收线程
         EventLoopGroup boosGroup = new NioEventLoopGroup();

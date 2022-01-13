@@ -7,8 +7,13 @@ import org.chaoqi.herostory.User;
 import org.chaoqi.herostory.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 
-public class UserEntryCmdHandler {
+public class UserEntryCmdHandler implements ICmdHandler<GameMsgProtocol.UserEntryCmd> {
+    @Override
     public void handle(ChannelHandlerContext ctx, GameMsgProtocol.UserEntryCmd cmd) {
+        if (null == ctx || null == cmd) {
+            return;
+        }
+
         int userId = cmd.getUserId();
         String avatar = cmd.getHeroAvatar();
 
