@@ -72,7 +72,8 @@ if (-1 == msgCode) {
 super.write(ctx, msg, promise);
     return;
 }
-//...
+//分配空间
+ByteBuf byteBuffer = ctx.alloc().buffer();
 //消息编码
 byteBuffer.writeShort((short)msgCode);
 
