@@ -28,6 +28,7 @@ public class GameMsgRecognizer {
     static private final Map<Class<?>, Integer> _msgClazzAndMsgCodeMap = new HashMap<>();
 
     static public void init() {
+        LOGGER.info("=== 初始化消息id 和消息类型 ===");
         //获取所有消息类
         Class<?>[] clazzArray = GameMsgProtocol.class.getDeclaredClasses();
 
