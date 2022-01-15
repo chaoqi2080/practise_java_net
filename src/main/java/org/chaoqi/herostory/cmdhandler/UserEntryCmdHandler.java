@@ -20,6 +20,7 @@ public class UserEntryCmdHandler implements ICmdHandler<GameMsgProtocol.UserEntr
         User newUser = new User();
         newUser.setUserId(userId);
         newUser.setUserAvatar(avatar);
+        newUser.setCurHp(100);
         UserManager.addUser(newUser);
 
         //把当前用户id 绑定到 ctx

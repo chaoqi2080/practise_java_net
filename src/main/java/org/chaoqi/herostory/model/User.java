@@ -10,6 +10,11 @@ public class User {
      */
     private String userAvatar;
 
+    /**
+     * 用户当前血量
+     */
+    private int curHp;
+
     public final MoveState moveState = new MoveState();
 
     public MoveState getMoveState() {
@@ -30,5 +35,13 @@ public class User {
 
     public void setUserAvatar(String userAvatar) {
         this.userAvatar = userAvatar;
+    }
+
+    public int getCurHp() {
+        return curHp;
+    }
+
+    public void setCurHp(int curHp) {
+        this.curHp = curHp;
     }
 }
