@@ -1,12 +1,10 @@
 package org.chaoqi.herostory;
 
-import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

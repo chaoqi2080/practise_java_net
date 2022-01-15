@@ -1,4 +1,4 @@
-package org.chaoqi.herostory;
+package org.chaoqi.herostory.model;
 
 public class User {
     /**
@@ -9,6 +9,12 @@ public class User {
      * 用户形象
      */
     private String userAvatar;
+
+    public final MoveState moveState = new MoveState();
+
+    public MoveState getMoveState() {
+        return moveState;
+    }
 
     public int getUserId() {
         return userId;

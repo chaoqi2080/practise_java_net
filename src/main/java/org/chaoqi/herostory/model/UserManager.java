@@ -1,4 +1,4 @@
-package org.chaoqi.herostory;
+package org.chaoqi.herostory.model;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +28,15 @@ public final class UserManager {
         }
 
         _userMap.putIfAbsent(u.getUserId(), u);
+    }
+
+    /**
+     * 根据用户id 获取用户
+     * @param userId
+     * @return
+     */
+    static public User getByUserId(int userId) {
+        return _userMap.get(userId);
     }
 
     /**

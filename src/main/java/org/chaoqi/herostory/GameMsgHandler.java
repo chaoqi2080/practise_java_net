@@ -6,6 +6,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.cmdhandler.CmdHandlerFactory;
 import org.chaoqi.herostory.cmdhandler.ICmdHandler;
+import org.chaoqi.herostory.model.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,9 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
         try {
             super.handlerRemoved(ctx);
 
+            //移除自己的 channel
+            Broadcaster.removeChannel(ctx.channel());
+
             Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
             if (null == userId) {
                 return;
@@ -44,8 +48,6 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
 
             //移除当前用户
             UserManager.removeByUserId(userId);
-            //移除自己的 channel
-            Broadcaster.removeChannel(ctx.channel());
 
             GameMsgProtocol.UserQuitResult.Builder resultBuilder = GameMsgProtocol.UserQuitResult.newBuilder();
             resultBuilder.setQuitUserId(userId);

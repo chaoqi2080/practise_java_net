@@ -65,7 +65,7 @@ public class GameMsgRecognizer {
                     LOGGER.info(
                             "{} => {}",
                             innerClazz.getName(),
-                            msgCode
+                            msgCode.getNumber()
                     );
 
                     _msgCodeAndMsgObjMap.put(msgCode.getNumber(), (GeneratedMessageV3)returnObj);
@@ -87,7 +87,7 @@ public class GameMsgRecognizer {
      * @return
      */
     static public Message.Builder getBuilderByMsgCode(int msgCode) {
-        if (msgCode < 1) {
+        if (msgCode < 0) {
             return null;
         }
 
