@@ -3,8 +3,8 @@ package org.chaoqi.herostory.cmdhandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.Broadcaster;
-import org.chaoqi.herostory.User;
-import org.chaoqi.herostory.UserManager;
+import org.chaoqi.herostory.model.User;
+import org.chaoqi.herostory.model.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 
 public class UserEntryCmdHandler implements ICmdHandler<GameMsgProtocol.UserEntryCmd> {
