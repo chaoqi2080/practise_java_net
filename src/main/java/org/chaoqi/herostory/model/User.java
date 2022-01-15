@@ -15,10 +15,17 @@ public class User {
      */
     private int curHp;
 
-    public final MoveState moveState = new MoveState();
+    /**
+     * 移动状态
+     */
+    private MoveState moveState;
 
     public MoveState getMoveState() {
         return moveState;
+    }
+
+    public void setMoveState(MoveState moveState) {
+        this.moveState = moveState;
     }
 
     public int getUserId() {

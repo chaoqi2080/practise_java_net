@@ -2,14 +2,13 @@ package org.chaoqi.herostory.cmdhandler;
 
 import io.netty.channel.ChannelHandlerContext;
 import org.chaoqi.herostory.Broadcaster;
-import org.chaoqi.herostory.GameMsgEncoder;
+import org.chaoqi.herostory.model.MoveState;
 import org.chaoqi.herostory.model.User;
 import org.chaoqi.herostory.model.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.LinkOption;
 import java.util.Collection;
 
 public class WhoElseIsHereCmdHandler implements ICmdHandler<GameMsgProtocol.WhoElseIsHereCmd> {
@@ -36,12 +35,14 @@ public class WhoElseIsHereCmdHandler implements ICmdHandler<GameMsgProtocol.WhoE
             userInfoBuilder.setUserId(currUser.getUserId());
             userInfoBuilder.setHeroAvatar(currUser.getUserAvatar());
 
+            MoveState mvState = currUser.getMoveState();
+
             GameMsgProtocol.WhoElseIsHereResult.UserInfo.MoveState.Builder mvStateBuilder= GameMsgProtocol.WhoElseIsHereResult.UserInfo.MoveState.newBuilder();
-            mvStateBuilder.setFromPosX(currUser.moveState.getFromX());
-            mvStateBuilder.setFromPosY(currUser.moveState.getFromY());
-            mvStateBuilder.setToPosX(currUser.moveState.getToX());
-            mvStateBuilder.setToPosY(currUser.moveState.getToY());
-            mvStateBuilder.setStartTime(currUser.moveState.getStartTime());
+            mvStateBuilder.setFromPosX(mvState.getFromX());
+            mvStateBuilder.setFromPosY(mvState.getFromY());
+            mvStateBuilder.setToPosX(mvState.getToX());
+            mvStateBuilder.setToPosY(mvState.getToY());
+            mvStateBuilder.setStartTime(mvState.getStartTime());
             userInfoBuilder.setMoveState(mvStateBuilder.build());
 
             resultBuilder.addUserInfo(userInfoBuilder.build());

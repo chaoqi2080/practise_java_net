@@ -1,11 +1,8 @@
 package org.chaoqi.herostory;
 
-import com.google.protobuf.GeneratedMessageV3;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
-import org.chaoqi.herostory.cmdhandler.CmdHandlerFactory;
-import org.chaoqi.herostory.cmdhandler.ICmdHandler;
 import org.chaoqi.herostory.model.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 import org.slf4j.Logger;
@@ -62,34 +59,11 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
         if (null == ctx || null == msg) {
             return;
         }
 
-        LOGGER.info(
-                "收到客户端消息, clazz = {}, msgBody = {}",
-                msg.getClass().getSimpleName(),
-                msg
-        );
-
-        ICmdHandler<? extends GeneratedMessageV3> cmdHandler = CmdHandlerFactory.create(msg.getClass());
-        if (null != cmdHandler) {
-            cmdHandler.handle(ctx, cast(msg));
-        }
-    }
-
-    /**
-     * 转型为命令对象
-     * @param msg
-     * @param <TCmd>
-     * @return
-     */
-    private <TCmd extends GeneratedMessageV3> TCmd cast(Object msg) {
-        if (null != msg && msg instanceof GeneratedMessageV3) {
-            return (TCmd) msg;
-        } else {
-            return null;
-        }
+        MainMsgProcessor.getInstance().process(ctx, msg);
     }
 }
