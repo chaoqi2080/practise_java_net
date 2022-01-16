@@ -3,7 +3,6 @@ package org.chaoqi.herostory.async;
 import org.chaoqi.herostory.MainMsgProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,19 +15,26 @@ public final class AsyncOperationProcessor {
     /**
      * 单例
      */
-    static private AsyncOperationProcessor _instance = new AsyncOperationProcessor();
+    static private final AsyncOperationProcessor _instance = new AsyncOperationProcessor();
 
-    static private ExecutorService _es = Executors.newSingleThreadExecutor((runnable)->{
-        //给此消息处理器一个名称，方便跟踪
-        Thread thread = new Thread(runnable);
-        thread.setName("AsyncOperationProcessor");
-        return thread;
-    });
+    /**
+     * 线程数组
+     */
+    private final ExecutorService[] _esArray = new ExecutorService[8];
 
     /**
      * 私有化构造器
      */
-    private AsyncOperationProcessor(){}
+    private AsyncOperationProcessor(){
+        for (int i = 0; i < _esArray.length; i++) {
+            final String processName = "AsyncOperationProcessor-" + i;
+            _esArray[i] = Executors.newSingleThreadExecutor((runnable)->{
+                Thread thread = new Thread(runnable);
+                thread.setName(processName);
+                return thread;
+            });
+        }
+    }
 
     /**
      * 获取消息处理器
@@ -47,7 +53,10 @@ public final class AsyncOperationProcessor {
             return;
         }
 
-        _es.submit(()-> {
+        int bindId = Math.abs(op.getBindId());
+        int esIndex = bindId % _esArray.length;
+
+        _esArray[esIndex].submit(()-> {
             //异步执行
             op.doAsync();
 

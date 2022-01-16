@@ -6,7 +6,6 @@ import org.chaoqi.herostory.cmdhandler.CmdHandlerFactory;
 import org.chaoqi.herostory.cmdhandler.ICmdHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,6 +23,9 @@ public final class MainMsgProcessor {
      */
     static private MainMsgProcessor _instance = new MainMsgProcessor();
 
+    /**
+     * 处理线程
+     */
     static private ExecutorService _es = Executors.newSingleThreadExecutor((runnable)->{
         //给此消息处理器一个名称，方便跟踪
         Thread thread = new Thread(runnable);

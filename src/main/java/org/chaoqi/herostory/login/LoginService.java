@@ -56,6 +56,11 @@ public final class LoginService {
                     callback.apply(this.getUserEntity());
                 }
             }
+
+            @Override
+            public int getBindId() {
+                return userName.hashCode();
+            }
         };
 
         //异步获取用户实体

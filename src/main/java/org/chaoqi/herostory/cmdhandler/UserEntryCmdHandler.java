@@ -3,7 +3,6 @@ package org.chaoqi.herostory.cmdhandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.Broadcaster;
-import org.chaoqi.herostory.model.MoveState;
 import org.chaoqi.herostory.model.User;
 import org.chaoqi.herostory.model.UserManager;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
