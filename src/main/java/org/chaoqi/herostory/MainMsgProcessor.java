@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 /**
  * 单线程消息处理器
  */
-public class MainMsgProcessor {
+public final class MainMsgProcessor {
     /**
      * 日志
      */
@@ -69,6 +69,19 @@ public class MainMsgProcessor {
             }
         });
     }
+
+    /**
+     * 执行 Runnable
+     * @param runnable
+     */
+    public void process(Runnable runnable) {
+        if (null == runnable) {
+            return;
+        }
+
+        _es.submit(runnable);
+    }
+
 
     /**
      * 转型为命令对象

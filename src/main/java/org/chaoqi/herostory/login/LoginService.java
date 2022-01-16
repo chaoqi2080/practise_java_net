@@ -2,10 +2,14 @@ package org.chaoqi.herostory.login;
 
 import org.apache.ibatis.session.SqlSession;
 import org.chaoqi.herostory.MySqlSessionFactory;
+import org.chaoqi.herostory.async.AsyncOperationProcessor;
+import org.chaoqi.herostory.async.IAsyncOperation;
 import org.chaoqi.herostory.login.db.IUserDao;
 import org.chaoqi.herostory.login.db.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Function;
 
 public final class LoginService {
     /**
@@ -39,38 +43,74 @@ public final class LoginService {
      * @param password
      * @return
      */
-    public UserEntity userLogin(String userName, String password) {
+    public void userLogin(String userName, String password, Function<UserEntity, Void> callback) {
         if (null == userName || null == password) {
-            return null;
+            return;
         }
 
-        try (SqlSession mySqlSession = MySqlSessionFactory.openSession()) {
-            // 获取 DAO
-            IUserDao dao = mySqlSession.getMapper(IUserDao.class);
-            // 获取用户实体
-            UserEntity userEntity = dao.getByUserName(userName);
-
-            LOGGER.info("当前线程 = {}", Thread.currentThread().getName());
-
-            if (null != userEntity) {
-                if (!password.equals(userEntity.getPassword())) {
-                    throw new RuntimeException("密码错误");
+        IAsyncOperation asyncOp = new AsyncGetUserEntity(userName, password){
+            @Override
+            public void doFinish() {
+                if (null != callback) {
+                    //查询到的用户实体同步使用消息处理器处理
+                    callback.apply(this.getUserEntity());
                 }
-            } else {
-                userEntity = new UserEntity();
-                userEntity.setUserName(userName);
-                userEntity.setPassword(password);
-                userEntity.setHeroAvatar("Hero_Shaman");
-
-                dao.insertInto(userEntity);
             }
+        };
 
-            return userEntity;
-        } catch (Exception ex) {
-            //
-            LOGGER.error(ex.getMessage(), ex);
-            return null;
-        }
+        //异步获取用户实体
+        AsyncOperationProcessor.getInstance().process(asyncOp);
     }
 
+    /**
+     * 异步获取 UserEntity 的内部类
+     */
+    private class AsyncGetUserEntity implements IAsyncOperation {
+        private String _userName;
+        private String _password;
+        private UserEntity _userEntity;
+
+        public AsyncGetUserEntity(String _userName, String _password) {
+            this._userName = _userName;
+            this._password = _password;
+        }
+
+        public UserEntity getUserEntity() {
+            return _userEntity;
+        }
+
+        @Override
+        public void doAsync() {
+            try (SqlSession mySqlSession = MySqlSessionFactory.openSession()) {
+
+                LOGGER.info(
+                        "当前线程 = {}",
+                        Thread.currentThread().getName()
+                );
+
+                // 获取 DAO
+                IUserDao dao = mySqlSession.getMapper(IUserDao.class);
+                // 获取用户实体
+                UserEntity userEntity = dao.getByUserName(_userName);
+
+                if (null != userEntity) {
+                    if (!_password.equals(userEntity.getPassword())) {
+                        throw new RuntimeException("密码错误");
+                    }
+                } else {
+                    userEntity = new UserEntity();
+                    userEntity.setUserName(_userName);
+                    userEntity.setPassword(_password);
+                    userEntity.setHeroAvatar("Hero_Shaman");
+
+                    dao.insertInto(userEntity);
+                }
+
+                _userEntity = userEntity;
+            } catch (Exception ex) {
+                //
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
+    }
 }
