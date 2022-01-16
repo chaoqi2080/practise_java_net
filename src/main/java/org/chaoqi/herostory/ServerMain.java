@@ -30,6 +30,8 @@ public class ServerMain {
         CmdHandlerFactory.init();
         // 初始化消息处理器
         GameMsgRecognizer.init();
+        //
+        MySqlSessionFactory.init();
 
         //接收线程
         EventLoopGroup boosGroup = new NioEventLoopGroup();

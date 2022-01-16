@@ -5,6 +5,11 @@ public class User {
      * 用户id
      */
     private int userId;
+
+    /**
+     * 用户登录名
+     */
+    private String userName;
     /**
      * 用户形象
      */
@@ -50,5 +55,13 @@ public class User {
 
     public void setCurHp(int curHp) {
         this.curHp = curHp;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
