@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 /**
  * 单线程消息处理器
  */
-public final class MainMsgProcessor {
+public final class MainThreadProcessor {
     /**
      * 日志
      */
@@ -21,7 +21,7 @@ public final class MainMsgProcessor {
     /**
      * 单例
      */
-    static private MainMsgProcessor _instance = new MainMsgProcessor();
+    static private MainThreadProcessor _instance = new MainThreadProcessor();
 
     /**
      * 处理线程
@@ -36,13 +36,13 @@ public final class MainMsgProcessor {
     /**
      * 私有化构造器
      */
-    private MainMsgProcessor(){}
+    private MainThreadProcessor(){}
 
     /**
      * 获取消息处理器
      * @return
      */
-    static public MainMsgProcessor getInstance() {
+    static public MainThreadProcessor getInstance() {
         return _instance;
     }
 
@@ -81,7 +81,7 @@ public final class MainMsgProcessor {
             return;
         }
 
-        _es.submit(runnable);
+        _es.submit(new SafeRun(runnable));
     }
 
 
@@ -96,6 +96,39 @@ public final class MainMsgProcessor {
             return (TCmd) msg;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * 安全运行
+     */
+    static private class SafeRun implements Runnable {
+        /**
+         * 内置运行实例
+         */
+        private Runnable _innerR;
+
+        /**
+         * 参数构造器
+         * @param _innerR
+         */
+        public SafeRun(Runnable _innerR) {
+            this._innerR = _innerR;
+        }
+
+        @Override
+        public void run() {
+            if (null == _innerR) {
+                return;
+            }
+
+            try {
+                //运行
+                _innerR.run();
+            } catch (Exception ex) {
+                //记录错误日志
+                LOGGER.error(ex.getMessage(), ex);
+            }
         }
     }
 }

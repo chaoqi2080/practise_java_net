@@ -1,6 +1,6 @@
 package org.chaoqi.herostory.async;
 
-import org.chaoqi.herostory.MainMsgProcessor;
+import org.chaoqi.herostory.MainThreadProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
@@ -61,7 +61,7 @@ public final class AsyncOperationProcessor {
             op.doAsync();
 
             //把处理完成的结果，丢到消息处理线程执行
-            MainMsgProcessor.getInstance().process(() -> op.doFinish());
+            MainThreadProcessor.getInstance().process(() -> op.doFinish());
         });
     }
 }

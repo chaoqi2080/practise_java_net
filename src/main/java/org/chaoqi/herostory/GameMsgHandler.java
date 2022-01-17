@@ -64,6 +64,6 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
 
-        MainMsgProcessor.getInstance().process(ctx, msg);
+        MainThreadProcessor.getInstance().process(ctx, msg);
     }
 }
