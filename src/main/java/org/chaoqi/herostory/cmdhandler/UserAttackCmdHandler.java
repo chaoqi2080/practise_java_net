@@ -5,6 +5,8 @@ import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.Broadcaster;
 import org.chaoqi.herostory.model.User;
 import org.chaoqi.herostory.model.UserManager;
+import org.chaoqi.herostory.mq.MqProducer;
+import org.chaoqi.herostory.mq.VictorMsg;
 import org.chaoqi.herostory.msg.GameMsgProtocol;
 
 public class UserAttackCmdHandler implements ICmdHandler<GameMsgProtocol.UserAttkCmd> {
@@ -41,6 +43,11 @@ public class UserAttackCmdHandler implements ICmdHandler<GameMsgProtocol.UserAtt
         //广播死亡结果
         if (targetUser.getCurHp() <= 0) {
             broadcastUserDieResult(msg.getTargetUserId());
+
+            VictorMsg mqMsg = new VictorMsg();
+            mqMsg.setWinnerId(userId);
+            mqMsg.setLoserId(targetUser.getUserId());
+            MqProducer.sendMsg("hero_story_victor", mqMsg);
         }
     }
 
