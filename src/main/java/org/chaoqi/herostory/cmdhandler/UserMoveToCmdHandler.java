@@ -38,11 +38,13 @@ public class UserMoveToCmdHandler implements ICmdHandler<GameMsgProtocol.UserMov
         long nowTime = System.currentTimeMillis();
 
         //保存玩家移动状态
-        existUser.moveState.setFromX(cmd.getMoveFromPosX());
-        existUser.moveState.setFromY(cmd.getMoveFromPosY());
-        existUser.moveState.setToX(cmd.getMoveToPosX());
-        existUser.moveState.setToY(cmd.getMoveToPosY());
-        existUser.moveState.setStartTime(nowTime);
+        MoveState mvState = new MoveState();
+        mvState.setFromX(cmd.getMoveFromPosX());
+        mvState.setFromY(cmd.getMoveFromPosY());
+        mvState.setToX(cmd.getMoveToPosX());
+        mvState.setToY(cmd.getMoveToPosY());
+        mvState.setStartTime(nowTime);
+        existUser.setMoveState(mvState);
 
         GameMsgProtocol.UserMoveToResult.Builder resultBuilder = GameMsgProtocol.UserMoveToResult.newBuilder();
         resultBuilder.setMoveUserId(userId);

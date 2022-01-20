@@ -28,6 +28,14 @@ public class MoveState {
      */
     private long startTime;
 
+    public MoveState() {
+        fromX = 0;
+        fromY = 0;
+        toX = 0;
+        toY = 0;
+        startTime = System.currentTimeMillis();
+    }
+
     public float getFromX() {
         return fromX;
     }

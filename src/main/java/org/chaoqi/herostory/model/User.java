@@ -5,15 +5,32 @@ public class User {
      * 用户id
      */
     private int userId;
+
+    /**
+     * 用户登录名
+     */
+    private String userName;
     /**
      * 用户形象
      */
     private String userAvatar;
 
-    public final MoveState moveState = new MoveState();
+    /**
+     * 用户当前血量
+     */
+    private int curHp;
+
+    /**
+     * 移动状态
+     */
+    private MoveState moveState;
 
     public MoveState getMoveState() {
         return moveState;
+    }
+
+    public void setMoveState(MoveState moveState) {
+        this.moveState = moveState;
     }
 
     public int getUserId() {
@@ -30,5 +47,21 @@ public class User {
 
     public void setUserAvatar(String userAvatar) {
         this.userAvatar = userAvatar;
+    }
+
+    public int getCurHp() {
+        return curHp;
+    }
+
+    public void setCurHp(int curHp) {
+        this.curHp = curHp;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

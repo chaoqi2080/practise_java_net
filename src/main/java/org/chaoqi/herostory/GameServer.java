@@ -14,22 +14,28 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.log4j.PropertyConfigurator;
 import org.chaoqi.herostory.cmdhandler.CmdHandlerFactory;
+import org.chaoqi.herostory.conf.AllConf;
+import org.chaoqi.herostory.mq.MqConsumer;
+import org.chaoqi.herostory.mq.MqProducer;
+import org.chaoqi.herostory.util.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServerMain {
+public class GameServer {
     /**
      * 日志对象
      */
-    static private final Logger LOGGER = LoggerFactory.getLogger(ServerMain.class);
+    static private final Logger LOGGER = LoggerFactory.getLogger(GameServer.class);
+
     public static void main(String[] args) {
         // 设置 log4j 属性文件
-        PropertyConfigurator.configure(ServerMain.class.getClassLoader().getResourceAsStream("log4j.properties"));
+        PropertyConfigurator.configure(GameServer.class.getClassLoader().getResourceAsStream("log4j.properties"));
 
-        // 初始化命令处理器
-        CmdHandlerFactory.init();
-        // 初始化消息处理器
-        GameMsgRecognizer.init();
+        GameMsgRecognizer.init();   //初始化消息识别器
+        CmdHandlerFactory.init();   //初始化命令处理器
+        MySqlSessionFactory.init(); //初始化 MySql 会话工厂
+        RedisUtil.init();           //初始化 Redis
+        MqProducer.init();          //初始化消息队列
 
         //接收线程
         EventLoopGroup boosGroup = new NioEventLoopGroup();
@@ -64,7 +70,7 @@ public class ServerMain {
             b.childOption(ChannelOption.SO_KEEPALIVE, true);
 
             //监听端口
-            ChannelFuture f = b.bind(12345).sync();
+            ChannelFuture f = b.bind(AllConf.GAME_SERVER_PORT).sync();
 
             if (f.isSuccess()) {
                 LOGGER.info("游戏服务器启动成功");
