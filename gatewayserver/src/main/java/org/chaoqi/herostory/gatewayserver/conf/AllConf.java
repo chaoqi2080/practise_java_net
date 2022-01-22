@@ -7,7 +7,7 @@ public final class AllConf {
     /**
      * 网关服务器主机地址
      */
-    static public final String GATE_SERVER_HOST = "127.0.0.1";
+    static public final String GATE_SERVER_HOST = "0.0.0.0";
     /**
      *  网关服务器端口号
      */
@@ -22,20 +22,6 @@ public final class AllConf {
      */
     static public final int GAME_SERVER_PORT = 12345;
 
-//    /**
-//     *  Redis 服务器主机地址
-//     */
-//    static public final String REDIS_SERVER_HOST = "127.0.0.1";
-//
-//    /**
-//     *  Redis 服务器端口号
-//     */
-//    static public final int REDIS_SERVER_PORT = 6379;
-//
-//    /**
-//     *  Redis 服务器密码
-//     */
-//    static public final String REDIS_PASSWORD = "";
 
     /**
      * 私有化类默认构造器
