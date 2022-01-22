@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.log4j.PropertyConfigurator;
+import org.chaoqi.herostory.gatewayserver.conf.AllConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,9 @@ public class GatewayServer {
                             //内容长度限制
                             new HttpObjectAggregator(65535),
                             //Websocket协议处理，处理握手、ping、pong 心跳等消息
-                            new WebSocketServerProtocolHandler("/websocket")
+                            new WebSocketServerProtocolHandler("/websocket"),
+                            //转发消息处理器
+                            new ClientMsgHandler()
                     );
                 }
             });
@@ -55,15 +58,20 @@ public class GatewayServer {
             b.childOption(ChannelOption.SO_KEEPALIVE, true);
 
             //监听端口
-            ChannelFuture f = b.bind("127.0.0.1", 54321).sync();
+            ChannelFuture f = b.bind(AllConf.GATE_SERVER_HOST, AllConf.GATE_SERVER_PORT).sync();
 
             if (f.isSuccess()) {
-                LOGGER.info(">>> 网关服务器启动成功 <<<");
+                LOGGER.info(
+                        ">>> 网关服务器启动成功 {}:{}<<<",
+                        AllConf.GATE_SERVER_HOST,
+                        AllConf.GATE_SERVER_PORT
+                );
             }
 
             f.channel().closeFuture().sync();
 
         } catch (Exception ex) {
+            //记录错误日志
             LOGGER.error(ex.getMessage(), ex);
         } finally {
             workerGroup.shutdownGracefully();
