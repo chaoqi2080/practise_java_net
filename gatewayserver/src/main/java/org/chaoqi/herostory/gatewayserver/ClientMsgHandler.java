@@ -1,21 +1,14 @@
 package org.chaoqi.herostory.gatewayserver;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.*;
-import org.chaoqi.herostory.gatewayserver.conf.AllConf;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 
 public class ClientMsgHandler extends SimpleChannelInboundHandler<Object> {
     /**
@@ -23,63 +16,16 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<Object> {
      */
     static private final Logger LOGGER = LoggerFactory.getLogger(ClientMsgHandler.class);
 
-    private Channel _gameServerChannel = null;
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         try {
             super.channelActive(ctx);
 
-            WebSocketClientHandshaker handShake = WebSocketClientHandshakerFactory.newHandshaker(
-                    new URI(
-                            "ws://" + AllConf.GAME_SERVER_HOST + ":" + AllConf.GAME_SERVER_PORT + "/websocket"
-                    ),
-                    WebSocketVersion.V13,
-                    null,
-                    true,
-                    new DefaultHttpHeaders()
-            );
-
-            NioEventLoopGroup boosGroup = new NioEventLoopGroup();
-            Bootstrap b = new Bootstrap();
-            b.group(boosGroup);
-            b.channel(NioSocketChannel.class);
-            b.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            new HttpClientCodec(),
-                            new HttpObjectAggregator(65535),
-                            new WebSocketClientProtocolHandler(handShake),
-                            new InternalServerMsgHandler(ctx.channel())
-                    );
-                }
-            });
-            b.option(ChannelOption.SO_KEEPALIVE, true);
-
-            //连接游戏服务器
-            ChannelFuture f = b.connect(AllConf.GAME_SERVER_HOST, AllConf.GAME_SERVER_PORT).sync();
-            if (!f.isSuccess()) {
-                LOGGER.error(">>> 连接游戏服务器失败 <<<");
-                return;
-            }
-
-            LOGGER.info(">>> 连接游戏服务器成功 <<<");
-
-            //等待 websocket 握手成功
-            CountDownLatch countDownLatch = new CountDownLatch(8);
-            while (!countDownLatch.await(200, TimeUnit.MILLISECONDS) && !handShake.isHandshakeComplete()) {
-                countDownLatch.countDown();
-            }
-
-            if (!handShake.isHandshakeComplete()) {
-                LOGGER.error("握手没有成功");
-                return;
-            }
-
-            LOGGER.info(">>> 握手成功 <<<");
-
-            _gameServerChannel = f.channel();
+            Channel ch = ctx.channel();
+            IdGetSetter.getInstance().setSessionId(ch);
+            ClientChannelGroup.addChannel(ch);
         } catch (Exception ex) {
             //
             LOGGER.error(ex.getMessage(), ex);
@@ -89,26 +35,45 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        if (null != _gameServerChannel) {
-            _gameServerChannel.close();
-        }
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Object msgObj) throws Exception {
         LOGGER.info(
                 ">>> 收到客户端消息 msgType = {} <<<",
-                msg.getClass().getSimpleName()
+                msgObj.getClass().getSimpleName()
         );
 
-        if (null == _gameServerChannel) {
-            LOGGER.error(">>> 没有连接上游戏服务端 <<<");
+        int session_id = IdGetSetter.getInstance().getSessionId(ctx.channel());
+        if (session_id <= 0) {
+            LOGGER.error("获取 session_id 失败");
             return;
         }
 
+
         //需要做一个本地备份，离开当前 pipeline msg 自动销毁
-        BinaryWebSocketFrame inputFrame = (BinaryWebSocketFrame) msg;
-        BinaryWebSocketFrame outputFrame = inputFrame.copy();
-        _gameServerChannel.writeAndFlush(outputFrame);
+        BinaryWebSocketFrame inputFrame = (BinaryWebSocketFrame) msgObj;
+        ByteBuf oldBuf = inputFrame.content();
+        //组合内部消息
+        //len + session_id + code + content
+        //[0, 0,              0, 13, 10, 1, 49, 18, 1, 49]
+        //[0, 12, 0, 0, 0, 2, 0, 13, 10, 1, 49, 18, 1, 49]
+        ByteBuf newBuf = ctx.alloc().buffer();
+
+        //读取原来的消息长度
+        oldBuf.readShort();
+
+        //len
+        newBuf.writeShort(oldBuf.readableBytes() + 4);
+        newBuf.writeInt(session_id);
+        oldBuf.readBytes(newBuf, oldBuf.readableBytes());
+
+        LOGGER.info(
+                "向游戏服务器发送消息 session_id = {}",
+                session_id
+        );
+
+        BinaryWebSocketFrame outputFrame = new BinaryWebSocketFrame(newBuf);
+        NettyClient.getInstance().sendMsg(outputFrame);
     }
 }

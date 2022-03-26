@@ -29,6 +29,9 @@ public class GatewayServer {
         // 设置 log4j 属性文件
         PropertyConfigurator.configure(GatewayServer.class.getClassLoader().getResourceAsStream("log4j.properties"));
 
+        // 连接游戏服务器
+        NettyClient.getInstance().connect(AllConf.GAME_SERVER_HOST, AllConf.GAME_SERVER_PORT);
+
         //接收线程
         EventLoopGroup boosGroup = new NioEventLoopGroup();
         //工作线程
