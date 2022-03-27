@@ -1,15 +1,15 @@
 package org.chaoqi.herostory.gatewayserver;
 
 import io.netty.channel.Channel;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.concurrent.GlobalEventExecutor;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClientChannelGroup {
     /**
      * 信道组，为了实现群发
      */
-    static private final ChannelGroup _channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    static private final Map<Integer, Channel> _chMap = new ConcurrentHashMap<>();
 
     /**
      * 私有化构造器
@@ -27,7 +27,7 @@ public final class ClientChannelGroup {
             return;
         }
 
-        _channelGroup.add(ch);
+        _chMap.put(IdGetSetter.getInstance().getSessionId(ch), ch);
     }
 
     /**
@@ -39,7 +39,7 @@ public final class ClientChannelGroup {
             return;
         }
 
-        _channelGroup.remove(ch);
+        _chMap.values().remove(ch);
     }
 
     /**
@@ -51,6 +51,12 @@ public final class ClientChannelGroup {
             return;
         }
 
-        _channelGroup.writeAndFlush(msg);
+        _chMap.values().forEach((ch)-> {
+            ch.writeAndFlush(msg);
+        });
+    }
+
+    static public Channel getChannelBySessionId(int sessionId) {
+        return _chMap.get(sessionId);
     }
 }

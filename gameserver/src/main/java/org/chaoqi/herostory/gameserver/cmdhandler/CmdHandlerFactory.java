@@ -82,8 +82,8 @@ public final class CmdHandlerFactory {
 
                 LOGGER.info(
                         "{} <==> {}",
-                        msgClazz.getClass().getSimpleName(),
-                        cmdHandler.getClass()
+                        msgClazz.getSimpleName(),
+                        cmdHandler.getClass().getSimpleName()
                         );
 
                 _handlerMap.put(msgClazz, cmdHandler);

@@ -1,5 +1,6 @@
 package org.chaoqi.herostory.gatewayserver;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -13,26 +14,40 @@ public class InternalServerMsgHandler extends SimpleChannelInboundHandler<Object
      */
     static private final Logger LOGGER = LoggerFactory.getLogger(InternalServerMsgHandler.class);
 
-    private Channel _clientChannel = null;
-
-    public InternalServerMsgHandler(Channel ch) {
-        _clientChannel = ch;
+    public InternalServerMsgHandler() {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (null == ctx || null == msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, Object msgObj) {
+        if (null == ctx || null == msgObj) {
+            LOGGER.error("ctx or msgObj null");
             return;
         }
 
-        if (null == _clientChannel) {
-            //
-            LOGGER.error("_gameChannel is empty.");
+        if (!(msgObj instanceof BinaryWebSocketFrame)) {
+            LOGGER.error("不是能识别的 BinaryWebSocketFrame 消息");
             return;
         }
 
-        BinaryWebSocketFrame inputFrame = (BinaryWebSocketFrame) msg;
-        BinaryWebSocketFrame outputFrame = inputFrame.copy();
-        _clientChannel.writeAndFlush(outputFrame);
+        BinaryWebSocketFrame inputFrame = (BinaryWebSocketFrame) msgObj;
+        ByteBuf oldBuf = inputFrame.content();
+        oldBuf.readShort();
+        int sessionId = oldBuf.readInt();
+
+        Channel ch = ClientChannelGroup.getChannelBySessionId(sessionId);
+        if (ch == null) {
+            LOGGER.error("找不到 sessionId = {} 对应的 channel", sessionId);
+            return;
+        }
+
+        ByteBuf newBuf = ctx.alloc().buffer();
+        newBuf.writeShort(0);
+        newBuf.writeBytes(oldBuf);
+        newBuf.setShort(0, oldBuf.readableBytes());
+
+        LOGGER.info("回消息到客户端=>");
+
+        BinaryWebSocketFrame outputFrame = new BinaryWebSocketFrame(newBuf);
+        ch.writeAndFlush(outputFrame);
     }
 }

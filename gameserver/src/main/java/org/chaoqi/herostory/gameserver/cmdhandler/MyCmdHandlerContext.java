@@ -34,6 +34,6 @@ public class MyCmdHandlerContext {
         innerMsg.setMsgObj(msg);
         innerMsg.setRemoteSessionId(_remoteSessionId);
 
-        _realCtx.writeAndFlush(msg);
+        _realCtx.writeAndFlush(innerMsg);
     }
 }

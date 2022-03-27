@@ -70,8 +70,8 @@ public class NettyClient {
                     ch.pipeline().addLast(
                             new HttpClientCodec(),
                             new HttpObjectAggregator(65535),
-                            new WebSocketClientProtocolHandler(handShake)
-                            //new InternalServerMsgHandler(ctx.channel())
+                            new WebSocketClientProtocolHandler(handShake),
+                            new InternalServerMsgHandler()
                     );
                 }
             });

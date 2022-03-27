@@ -64,7 +64,7 @@ public class GameMsgRecognizer {
 
                     LOGGER.info(
                             "{} => {}",
-                            innerClazz.getName(),
+                            innerClazz.getSimpleName(),
                             msgCode.getNumber()
                     );
 

@@ -15,18 +15,23 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
      */
     static private final Logger LOGGER = LoggerFactory.getLogger(GameMsgEncoder.class);
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (null == ctx || null == msg) {
+            LOGGER.error("ctx or msg is empty");
             return;
         }
 
         try {
-            if (!(msg instanceof GeneratedMessageV3)) {
+            if (!(msg instanceof InternalMessage)) {
                 super.write(ctx, msg, promise);
+                LOGGER.error("not internalMessage");
                 return;
             }
 
-            int msgCode = GameMsgRecognizer.getMsgCodeByClazz(msg.getClass());
+            InternalMessage innerMsg = (InternalMessage) msg;
+            GeneratedMessageV3 protoMsg = innerMsg.getMsg();
+
+            int msgCode = GameMsgRecognizer.getMsgCodeByClazz(protoMsg.getClass());
             if (-1 == msgCode) {
                 LOGGER.error(
                         "无法识别的消息类型， msgClazz = {}",
@@ -38,17 +43,18 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
             }
 
             //消息体
-            byte[] msgBody = ((GeneratedMessageV3) msg).toByteArray();
+            byte[] msgBody = protoMsg.toByteArray();
 
-            ByteBuf byteBuffer = ctx.alloc().buffer();
-            //消息长度
-            byteBuffer.writeShort((short)msgBody.length);
-            //消息编码
-            byteBuffer.writeShort((short)msgCode);
-            //消息体
-            byteBuffer.writeBytes(msgBody);
+            ByteBuf byteBuf = ctx.alloc().buffer();
+            byteBuf.writeShort((short)0);//占位
+            byteBuf.writeInt(innerMsg.getRemoteSessionId());
+            byteBuf.writeShort((short)msgCode);
+            byteBuf.writeBytes(msgBody);
+            //write message len.
+            byteBuf.setShort(0, byteBuf.readableBytes()-2);
 
-            BinaryWebSocketFrame outputFrame = new BinaryWebSocketFrame(byteBuffer);
+            LOGGER.info("回消息到客户端=>");
+            BinaryWebSocketFrame outputFrame = new BinaryWebSocketFrame(byteBuf);
             super.write(ctx, outputFrame, promise);
         } catch (Exception ex) {
             //处理错误日志
