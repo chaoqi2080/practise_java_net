@@ -1,6 +1,5 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
-import io.netty.channel.ChannelHandlerContext;
 import org.chaoqi.herostory.gameserver.Broadcaster;
 import org.chaoqi.herostory.gameserver.model.MoveState;
 import org.chaoqi.herostory.gameserver.model.User;
@@ -18,7 +17,7 @@ public class WhoElseIsHereCmdHandler implements ICmdHandler<GameMsgProtocol.WhoE
     static private final Logger LOGGER = LoggerFactory.getLogger(WhoElseIsHereCmdHandler.class);
 
     @Override
-    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.WhoElseIsHereCmd cmd) {
+    public void handle(MyCmdHandlerContext ctx, GameMsgProtocol.WhoElseIsHereCmd cmd) {
         if (null == ctx || null == cmd) {
             return;
         }

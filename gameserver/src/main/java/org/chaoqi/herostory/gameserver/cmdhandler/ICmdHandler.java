@@ -1,7 +1,6 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
 import com.google.protobuf.GeneratedMessageV3;
-import io.netty.channel.ChannelHandlerContext;
 
 /**
  * 命令处理器
@@ -13,5 +12,5 @@ public interface ICmdHandler<TCmd extends GeneratedMessageV3> {
      * @param ctx
      * @param msg
      */
-    void handle(ChannelHandlerContext ctx, TCmd msg);
+    void handle(MyCmdHandlerContext ctx, TCmd msg);
 }

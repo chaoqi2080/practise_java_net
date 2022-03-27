@@ -3,6 +3,7 @@ package org.chaoqi.herostory.gameserver;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
+import org.chaoqi.herostory.gameserver.cmdhandler.MyCmdHandlerContext;
 import org.chaoqi.herostory.gameserver.model.UserManager;
 import org.chaoqi.herostory.gameserver.msg.GameMsgProtocol;
 import org.slf4j.Logger;
@@ -64,6 +65,16 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
 
-        MainThreadProcessor.getInstance().process(ctx, msg);
+        if (!(msg instanceof InternalMessage)) {
+            LOGGER.error("不是 InternalMessage");
+            return;
+        }
+
+        InternalMessage innerMsg = (InternalMessage)msg;
+
+        MyCmdHandlerContext myCtx = new MyCmdHandlerContext(ctx);
+        myCtx.setRemoteSessionId(innerMsg.getRemoteSessionId());
+
+        MainThreadProcessor.getInstance().process(myCtx, innerMsg.getMsg());
     }
 }

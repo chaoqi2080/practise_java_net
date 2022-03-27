@@ -1,7 +1,5 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.gameserver.async.AsyncOperationProcessor;
 import org.chaoqi.herostory.gameserver.login.LoginService;
 import org.chaoqi.herostory.gameserver.model.MoveState;
@@ -18,7 +16,7 @@ public class UserLoginCmdHandler implements ICmdHandler<GameMsgProtocol.UserLogi
     static private final Logger LOGGER = LoggerFactory.getLogger(AsyncOperationProcessor.class);
 
     @Override
-    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.UserLoginCmd cmd) {
+    public void handle(MyCmdHandlerContext ctx, GameMsgProtocol.UserLoginCmd cmd) {
         if (null == ctx || null == cmd) {
             return;
         }
@@ -57,7 +55,7 @@ public class UserLoginCmdHandler implements ICmdHandler<GameMsgProtocol.UserLogi
                 UserManager.addUser(newUser);
 
                 //把当前用户id 绑定到 ctx
-                ctx.attr (AttributeKey.valueOf("userId")).set(userEntity.getUserId());
+                ctx.setUserId(userEntity.getUserId());
 
                 resultBuilder.setUserId(userEntity.getUserId());
                 resultBuilder.setUserName(userEntity.getUserName());

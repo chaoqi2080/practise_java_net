@@ -1,7 +1,5 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.gameserver.Broadcaster;
 import org.chaoqi.herostory.gameserver.model.MoveState;
 import org.chaoqi.herostory.gameserver.model.User;
@@ -17,16 +15,13 @@ public class UserMoveToCmdHandler implements ICmdHandler<GameMsgProtocol.UserMov
     static private final Logger LOGGER = LoggerFactory.getLogger(UserMoveToCmdHandler.class);
 
     @Override
-    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.UserMoveToCmd cmd) {
+    public void handle(MyCmdHandlerContext ctx, GameMsgProtocol.UserMoveToCmd cmd) {
         if (null == ctx || null == cmd) {
             return;
         }
 
         //获取跟当前 ctx 绑定的用户id
-        Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
-        if (null == userId) {
-            return;
-        }
+        int userId = ctx.getUserId();
 
         // 获取存在的用户
         User existUser = UserManager.getByUserId(userId);

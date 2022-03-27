@@ -4,6 +4,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.netty.channel.ChannelHandlerContext;
 import org.chaoqi.herostory.gameserver.cmdhandler.CmdHandlerFactory;
 import org.chaoqi.herostory.gameserver.cmdhandler.ICmdHandler;
+import org.chaoqi.herostory.gameserver.cmdhandler.MyCmdHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
@@ -51,7 +52,7 @@ public final class MainThreadProcessor {
      * @param ctx
      * @param msg
      */
-    public void process(ChannelHandlerContext ctx, Object msg) {
+    public void process(MyCmdHandlerContext ctx, Object msg) {
 
         LOGGER.info(
                 "收到客户端消息, clazz = {}, msgBody = {}",

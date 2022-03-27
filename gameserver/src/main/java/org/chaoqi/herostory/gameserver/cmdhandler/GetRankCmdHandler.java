@@ -1,6 +1,5 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
-import io.netty.channel.ChannelHandlerContext;
 import org.chaoqi.herostory.gameserver.msg.GameMsgProtocol;
 import org.chaoqi.herostory.gameserver.rank.RankItem;
 import org.chaoqi.herostory.gameserver.rank.RankService;
@@ -12,7 +11,7 @@ import java.util.Collections;
  */
 public class GetRankCmdHandler implements ICmdHandler<GameMsgProtocol.GetRankCmd> {
     @Override
-    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.GetRankCmd msg) {
+    public void handle(MyCmdHandlerContext ctx, GameMsgProtocol.GetRankCmd msg) {
         if (null == ctx || null == msg) {
             return;
         }

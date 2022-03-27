@@ -1,5 +1,6 @@
 package org.chaoqi.herostory.gameserver;
 
+import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
@@ -63,7 +64,12 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
                     "处理消息 {}",
                     cmd.getClass().getSimpleName()
             );
-            ctx.fireChannelRead(cmd);
+
+            InternalMessage innerMsg = new InternalMessage();
+            innerMsg.setMsgObj((GeneratedMessageV3) cmd);
+            innerMsg.setRemoteSessionId(remoteSessionId);
+
+            ctx.fireChannelRead(innerMsg);
         }
 
     }

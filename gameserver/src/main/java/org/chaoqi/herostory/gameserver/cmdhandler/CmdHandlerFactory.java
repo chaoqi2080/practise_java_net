@@ -82,7 +82,7 @@ public final class CmdHandlerFactory {
 
                 LOGGER.info(
                         "{} <==> {}",
-                        msgClazz.getName(),
+                        msgClazz.getClass().getSimpleName(),
                         cmdHandler.getClass()
                         );
 

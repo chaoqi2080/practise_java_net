@@ -1,7 +1,5 @@
 package org.chaoqi.herostory.gameserver.cmdhandler;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.AttributeKey;
 import org.chaoqi.herostory.gameserver.Broadcaster;
 import org.chaoqi.herostory.gameserver.model.User;
 import org.chaoqi.herostory.gameserver.model.UserManager;
@@ -11,15 +9,12 @@ import org.chaoqi.herostory.gameserver.msg.GameMsgProtocol;
 
 public class UserAttackCmdHandler implements ICmdHandler<GameMsgProtocol.UserAttkCmd> {
     @Override
-    public void handle(ChannelHandlerContext ctx, GameMsgProtocol.UserAttkCmd msg) {
+    public void handle(MyCmdHandlerContext ctx, GameMsgProtocol.UserAttkCmd msg) {
         if (null == ctx || null == msg) {
             return;
         }
 
-        Integer userId = (Integer) ctx.attr(AttributeKey.valueOf("userId")).get();
-        if (null == userId) {
-            return;
-        }
+        int userId = ctx.getUserId();
 
         User user = UserManager.getByUserId(userId);
         if (null == user) {
